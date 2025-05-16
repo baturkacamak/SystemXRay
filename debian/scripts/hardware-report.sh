@@ -9,6 +9,7 @@ source "$SCRIPT_DIR/config/colors.sh"
 # Source utilities
 source "$SCRIPT_DIR/utils/spinner.sh"
 source "$SCRIPT_DIR/utils/language.sh"
+source "$SCRIPT_DIR/utils/help.sh"
 
 # Source modules
 source "$SCRIPT_DIR/modules/package_manager.sh"
@@ -30,11 +31,15 @@ LANGUAGE=""
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
+            -h|--help)
+                show_help
+                exit 0
+                ;;
             -o|--output)
                 OUTPUT_FILE="$2"
                 shift 2
                 ;;
-            -h|--html)
+            -H|--html)
                 HTML_OUTPUT=true
                 shift
                 ;;
@@ -51,7 +56,8 @@ parse_arguments() {
                 shift 2
                 ;;
             *)
-                echo -e "${RED}Unknown parameter: $1${RESET}"
+                echo -e "${RED}Error: Unknown parameter: $1${RESET}"
+                echo -e "Use --help to see available options"
                 exit 1
                 ;;
         esac
