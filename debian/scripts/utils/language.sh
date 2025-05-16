@@ -30,17 +30,30 @@ is_language_supported() {
 load_language() {
     local lang="$1"
     local lang_file="$SCRIPT_DIR/lang/$lang"
+    local help_file="$SCRIPT_DIR/lang/help/$lang"
     
     # If language file doesn't exist, fall back to English
     if [ ! -f "$lang_file" ]; then
         lang_file="$SCRIPT_DIR/lang/en"
     fi
     
-    # Source the language file
+    # If help file doesn't exist, fall back to English
+    if [ ! -f "$help_file" ]; then
+        help_file="$SCRIPT_DIR/lang/help/en"
+    fi
+    
+    # Source the language files
     if [ -f "$lang_file" ]; then
         source "$lang_file"
     else
         echo "Error: Language file not found: $lang_file" >&2
+        exit 1
+    fi
+    
+    if [ -f "$help_file" ]; then
+        source "$help_file"
+    else
+        echo "Error: Help file not found: $help_file" >&2
         exit 1
     fi
 }
