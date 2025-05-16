@@ -2,104 +2,86 @@
 
 # Source required files
 source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../utils/common.sh"
 
 # Get basic system information (vendor and model)
 get_basic_system_info() {
-    echo -e "\n${BOLD}${BLUE}$SYSTEM_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$SYSTEM_INFO"
 
-    if command -v dmidecode &> /dev/null; then
-        VENDOR=$(sudo dmidecode -s system-manufacturer 2>/dev/null)
-        MODEL=$(sudo dmidecode -s system-product-name 2>/dev/null)
+    if check_command_available "dmidecode"; then
+        local vendor=$(sudo dmidecode -s system-manufacturer 2>/dev/null)
+        local model=$(sudo dmidecode -s system-product-name 2>/dev/null)
         
-        if [ ! -z "$VENDOR" ] && [ ! -z "$MODEL" ]; then
-            echo -e "${YELLOW}System:${RESET} $VENDOR $MODEL"
+        if [ ! -z "$vendor" ] && [ ! -z "$model" ]; then
+            print_key_value "System" "$vendor $model"
         fi
     fi
 }
 
 # Get system information
 get_system_info() {
-    echo -e "\n${BOLD}${BLUE}$SYSTEM_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$SYSTEM_INFO"
 
-    if command -v hostnamectl &> /dev/null; then
-        echo -e "${YELLOW}$SYSTEM_INFO:${RESET}"
-        hostnamectl | sed 's/^/  /'
+    if check_command_available "hostnamectl"; then
+        print_list "$SYSTEM_INFO" "$(hostnamectl)"
     fi
 }
 
 # Get OS information
 get_os_info() {
-    echo -e "\n${BOLD}${BLUE}$OS_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$OS_INFO"
 
     if [ -f /etc/os-release ]; then
-        echo -e "${YELLOW}$OS:${RESET}"
-        cat /etc/os-release | grep -E "PRETTY_NAME|VERSION" | sed 's/^/  /'
+        print_list "$OS" "$(cat /etc/os-release | grep -E "PRETTY_NAME|VERSION")"
     fi
 }
 
 # Get kernel information
 get_kernel_info() {
-    echo -e "\n${BOLD}${BLUE}$KERNEL_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
-
-    echo -e "${YELLOW}$KERNEL_VERSION:${RESET}"
-    uname -a | sed 's/^/  /'
+    print_section_header "$KERNEL_INFO"
+    print_list "$KERNEL_VERSION" "$(uname -a)"
 }
 
 # Get system uptime
 get_uptime_info() {
-    echo -e "\n${BOLD}${BLUE}$UPTIME_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$UPTIME_INFO"
 
-    if command -v uptime &> /dev/null; then
-        echo -e "${YELLOW}$UPTIME:${RESET}"
-        uptime | sed 's/^/  /'
+    if check_command_available "uptime"; then
+        print_list "$UPTIME" "$(uptime)"
     fi
 }
 
 # Get system load
 get_system_load() {
-    echo -e "\n${BOLD}${BLUE}$SYSTEM_LOAD${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$SYSTEM_LOAD"
 
-    if command -v top &> /dev/null; then
-        echo -e "${YELLOW}$SYSTEM_LOAD:${RESET}"
-        top -bn1 | grep "load average" | sed 's/^/  /'
+    if check_command_available "top"; then
+        print_list "$SYSTEM_LOAD" "$(top -bn1 | grep "load average")"
     fi
 }
 
 # Get running processes
 get_running_processes() {
-    echo -e "\n${BOLD}${BLUE}$RUNNING_PROCESSES${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$RUNNING_PROCESSES"
 
-    if command -v ps &> /dev/null; then
-        echo -e "${YELLOW}$TOP_CPU_PROCESSES:${RESET}"
-        ps aux --sort=-%cpu | head -6 | sed 's/^/  /'
+    if check_command_available "ps"; then
+        print_list "$TOP_CPU_PROCESSES" "$(ps aux --sort=-%cpu | head -6)"
     fi
 }
 
 # Get system services
 get_system_services() {
-    echo -e "\n${BOLD}${BLUE}$SYSTEM_SERVICES${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$SYSTEM_SERVICES"
 
-    if command -v systemctl &> /dev/null; then
-        echo -e "${YELLOW}$ACTIVE_SERVICES:${RESET}"
-        systemctl list-units --type=service --state=running | head -10 | sed 's/^/  /'
+    if check_command_available "systemctl"; then
+        print_list "$ACTIVE_SERVICES" "$(systemctl list-units --type=service --state=running | head -10)"
     fi
 }
 
 # Get system users
 get_system_users() {
-    echo -e "\n${BOLD}${BLUE}$SYSTEM_USERS${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
-
-    echo -e "${YELLOW}$ACTIVE_USERS:${RESET}"
-    who | sed 's/^/  /'
+    print_section_header "$SYSTEM_USERS"
+    print_list "$ACTIVE_USERS" "$(who)"
 }
 
 # Main system information gathering function

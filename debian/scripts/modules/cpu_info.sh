@@ -2,70 +2,80 @@
 
 # Source required files
 source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../utils/common.sh"
 
 # Get basic CPU information
 get_basic_cpu_info() {
-    echo -e "\n${BOLD}${BLUE}$CPU_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$CPU_INFO"
 
-    if command -v lscpu &> /dev/null; then
-        MODEL=$(lscpu | grep "Model name" | sed 's/^.*: *//')
-        CORES=$(lscpu | grep "CPU(s):" | head -1 | awk '{print $2}')
-        THREADS=$(lscpu | grep "Thread(s) per core" | awk '{print $4}')
-        TOTAL_THREADS=$((CORES * THREADS))
+    if check_command_available "lscpu"; then
+        local model=$(extract_value "lscpu" "Model name" 's/^.*: *//')
+        local cores=$(extract_value "lscpu" "CPU(s):" 's/^.*: *//')
+        local threads=$(extract_value "lscpu" "Thread(s) per core" 's/^.*: *//')
         
-        echo -e "${YELLOW}Processor:${RESET} $MODEL"
-        echo -e "${YELLOW}Cores/Threads:${RESET} $CORES cores, $TOTAL_THREADS threads"
+        # Ensure we have valid numbers for calculation
+        if [[ "$cores" =~ ^[0-9]+$ ]] && [[ "$threads" =~ ^[0-9]+$ ]]; then
+            local total_threads=$((cores * threads))
+            print_key_value "$CPU_MODEL" "$model"
+            print_key_value "$CPU_CORES_THREADS" "$cores cores, $total_threads threads"
+        else
+            print_key_value "$CPU_MODEL" "$model"
+            print_key_value "$CPU_CORES" "$cores"
+            print_key_value "$CPU_THREADS" "$threads"
+        fi
     fi
 }
 
 # Get CPU information
 get_cpu_info() {
-    echo -e "\n${BOLD}${BLUE}$CPU_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$CPU_INFO"
 
-    # Basic CPU information
-    if command -v lscpu &> /dev/null; then
-        echo -e "${YELLOW}$CPU_MODEL:${RESET}"
-        lscpu | grep "Model name" | sed 's/^.*: *//'
+    if check_command_available "lscpu"; then
+        print_key_value "$CPU_MODEL" "$(extract_value "lscpu" "Model name" 's/^.*: *//')"
         
-        echo -e "\n${YELLOW}$CPU_FEATURES:${RESET}"
-        echo -e "$CPU_CORES: $(lscpu | grep "CPU(s):" | head -1 | awk '{print $2}')"
-        echo -e "$CPU_THREADS: $(lscpu | grep "Thread(s) per core" | awk '{print $4}')"
-        echo -e "$CPU_MAX_SPEED: $(lscpu | grep "CPU max MHz" | awk '{print $4}') MHz"
-        echo -e "$CPU_CACHE: $(lscpu | grep "L3 cache" | awk '{print $3}')"
+        # Get CPU features with proper error handling
+        local cpu_features=$(lscpu | grep -E "CPU\(s\)|Thread\(s\) per core|CPU max MHz|L3 cache" | sed 's/^.*: *//')
+        if [ ! -z "$cpu_features" ]; then
+            print_list "$CPU_FEATURES" "$cpu_features"
+        fi
     fi
 
-    # CPU temperature if available
-    if command -v sensors &> /dev/null; then
-        echo -e "\n${YELLOW}$CPU_TEMP:${RESET}"
-        sensors | grep -E "Core|Package" | grep -v "crit" | sed 's/^/  /'
+    if check_command_available "sensors"; then
+        local temp_info=$(sensors | grep -E "Core|Package" | grep -v "crit")
+        if [ ! -z "$temp_info" ]; then
+            print_list "$CPU_TEMP" "$temp_info"
+        fi
     fi
 
-    # CPU usage
-    echo -e "\n${YELLOW}$CPU_USAGE:${RESET}"
-    top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}'
+    if check_command_available "top"; then
+        local cpu_usage=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}')
+        if [ ! -z "$cpu_usage" ]; then
+            print_key_value "$CPU_USAGE" "$cpu_usage"
+        fi
+    fi
 }
 
 # Get CPU architecture information
 get_cpu_arch_info() {
-    echo -e "\n${BOLD}${BLUE}$CPU_ARCH_INFO${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$CPU_ARCH_INFO"
 
-    if command -v lscpu &> /dev/null; then
-        echo -e "${YELLOW}$ARCHITECTURE_DETAILS:${RESET}"
-        lscpu | grep -E "Architecture|CPU op-mode|Byte Order|Vendor ID|Virtualization|Hypervisor vendor"
+    if check_command_available "lscpu"; then
+        local arch_info=$(lscpu | grep -E "Architecture|CPU op-mode|Byte Order|Vendor ID|Virtualization|Hypervisor vendor")
+        if [ ! -z "$arch_info" ]; then
+            print_list "$ARCHITECTURE_DETAILS" "$arch_info"
+        fi
     fi
 }
 
 # Get CPU flags and features
 get_cpu_features() {
-    echo -e "\n${BOLD}${BLUE}$CPU_FEATURES_AND_FLAGS${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$CPU_FEATURES_AND_FLAGS"
 
-    if command -v lscpu &> /dev/null; then
-        echo -e "${YELLOW}$CPU_FLAGS:${RESET}"
-        lscpu | grep "Flags" | sed 's/^.*: *//' | fold -s -w 80
+    if check_command_available "lscpu"; then
+        local flags=$(lscpu | grep "Flags" | sed 's/^.*: *//' | fold -s -w 80)
+        if [ ! -z "$flags" ]; then
+            print_list "$CPU_FLAGS" "$flags"
+        fi
     fi
 }
 

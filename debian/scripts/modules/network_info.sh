@@ -2,75 +2,63 @@
 
 # Source required files
 source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../utils/common.sh"
 
 # Get network interfaces information
 get_network_interfaces() {
-    echo -e "\n${BOLD}${BLUE}${NETWORK_INTERFACES_HEADER}${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$NETWORK_INTERFACES_HEADER"
 
-    if command -v ip &> /dev/null; then
-        echo -e "${YELLOW}${NETWORK_INTERFACES_LABEL}:${RESET}"
-        ip addr show | grep -E "^[0-9]+:|inet " | sed 's/^/  /'
+    if check_command_available "ip"; then
+        print_list "$NETWORK_INTERFACES_LABEL" "$(ip addr show | grep -E "^[0-9]+:|inet ")"
     fi
 }
 
 # Get network connection status
 get_network_status() {
-    echo -e "\n${BOLD}${BLUE}${NETWORK_STATUS_HEADER}${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$NETWORK_STATUS_HEADER"
 
-    if command -v nmcli &> /dev/null; then
-        echo -e "${YELLOW}${NETWORK_STATUS_LABEL}:${RESET}"
-        nmcli device status | sed 's/^/  /'
+    if check_command_available "nmcli"; then
+        print_list "$NETWORK_STATUS_LABEL" "$(nmcli device status)"
     fi
 }
 
 # Get network speed and statistics
 get_network_stats() {
-    echo -e "\n${BOLD}${BLUE}${NETWORK_STATS_HEADER}${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$NETWORK_STATS_HEADER"
 
-    if command -v netstat &> /dev/null; then
-        echo -e "${YELLOW}${ACTIVE_CONNECTIONS_LABEL}:${RESET}"
-        netstat -tuln | grep LISTEN | sed 's/^/  /'
+    if check_command_available "netstat"; then
+        print_list "$ACTIVE_CONNECTIONS_LABEL" "$(netstat -tuln | grep LISTEN)"
     fi
 
-    if command -v ifconfig &> /dev/null; then
-        echo -e "\n${YELLOW}${INTERFACE_STATS_LABEL}:${RESET}"
-        ifconfig | grep -E "RX|TX" | sed 's/^/  /'
+    if check_command_available "ifconfig"; then
+        print_list "$INTERFACE_STATS_LABEL" "$(ifconfig | grep -E "RX|TX")"
     fi
 }
 
 # Get wireless information
 get_wireless_info() {
-    echo -e "\n${BOLD}${BLUE}${WIRELESS_INFO_HEADER}${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$WIRELESS_INFO_HEADER"
 
-    if command -v iwconfig &> /dev/null; then
-        echo -e "${YELLOW}${WIRELESS_INTERFACE_LABEL}:${RESET}"
-        iwconfig 2>/dev/null | grep -v "no wireless" | sed 's/^/  /'
+    if check_command_available "iwconfig"; then
+        print_list "$WIRELESS_INTERFACE_LABEL" "$(iwconfig 2>/dev/null | grep -v "no wireless")"
     fi
 }
 
 # Get network routing information
 get_routing_info() {
-    echo -e "\n${BOLD}${BLUE}${ROUTING_INFO_HEADER}${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$ROUTING_INFO_HEADER"
 
-    if command -v route &> /dev/null; then
-        echo -e "${YELLOW}${ROUTING_TABLE_LABEL}:${RESET}"
-        route -n | sed 's/^/  /'
+    if check_command_available "route"; then
+        print_list "$ROUTING_TABLE_LABEL" "$(route -n)"
     fi
 }
 
 # Get DNS information
 get_dns_info() {
-    echo -e "\n${BOLD}${BLUE}${DNS_INFO_HEADER}${RESET}"
-    echo -e "${CYAN}----------------------------------------${RESET}"
+    print_section_header "$DNS_INFO_HEADER"
 
-    if command -v cat &> /dev/null; then
-        echo -e "${YELLOW}${DNS_SERVERS_LABEL}:${RESET}"
-        cat /etc/resolv.conf | grep "nameserver" | sed 's/^/  /'
+    if check_command_available "cat"; then
+        print_list "$DNS_SERVERS_LABEL" "$(cat /etc/resolv.conf | grep "nameserver")"
     fi
 }
 
