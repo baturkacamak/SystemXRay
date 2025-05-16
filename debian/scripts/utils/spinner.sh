@@ -10,7 +10,7 @@ show_spinner() {
     local spinstr='|/-\'
     local start_time=$(date +%s)
 
-    echo -ne "${YELLOW}Yükleniyor "
+    echo -ne "${YELLOW}${LOADING_MSG} "
 
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local current_time=$(date +%s)
@@ -21,8 +21,8 @@ show_spinner() {
         local spinstr=$temp${spinstr%"$temp"}
         sleep $delay
         printf "\r"
-        echo -ne "${YELLOW}Yükleniyor "
+        echo -ne "${YELLOW}${LOADING_MSG} "
     done
 
-    printf "\r${GREEN}Tamamlandı!    ${RESET}\n"
+    printf "\r${GREEN}${DONE_MSG}    ${RESET}\n"
 } 

@@ -5,71 +5,71 @@ source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
 
 # Get network interfaces information
 get_network_interfaces() {
-    echo -e "\n${BOLD}${BLUE}Ağ Arayüzleri${RESET}"
+    echo -e "\n${BOLD}${BLUE}${NETWORK_INTERFACES_HEADER}${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v ip &> /dev/null; then
-        echo -e "${YELLOW}Ağ Arayüzleri ve IP Adresleri:${RESET}"
+        echo -e "${YELLOW}${NETWORK_INTERFACES_LABEL}:${RESET}"
         ip addr show | grep -E "^[0-9]+:|inet " | sed 's/^/  /'
     fi
 }
 
 # Get network connection status
 get_network_status() {
-    echo -e "\n${BOLD}${BLUE}Ağ Bağlantı Durumu${RESET}"
+    echo -e "\n${BOLD}${BLUE}${NETWORK_STATUS_HEADER}${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v nmcli &> /dev/null; then
-        echo -e "${YELLOW}Bağlantı Durumu:${RESET}"
+        echo -e "${YELLOW}${NETWORK_STATUS_LABEL}:${RESET}"
         nmcli device status | sed 's/^/  /'
     fi
 }
 
 # Get network speed and statistics
 get_network_stats() {
-    echo -e "\n${BOLD}${BLUE}Ağ İstatistikleri${RESET}"
+    echo -e "\n${BOLD}${BLUE}${NETWORK_STATS_HEADER}${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v netstat &> /dev/null; then
-        echo -e "${YELLOW}Aktif Bağlantılar:${RESET}"
+        echo -e "${YELLOW}${ACTIVE_CONNECTIONS_LABEL}:${RESET}"
         netstat -tuln | grep LISTEN | sed 's/^/  /'
     fi
 
     if command -v ifconfig &> /dev/null; then
-        echo -e "\n${YELLOW}Arayüz İstatistikleri:${RESET}"
+        echo -e "\n${YELLOW}${INTERFACE_STATS_LABEL}:${RESET}"
         ifconfig | grep -E "RX|TX" | sed 's/^/  /'
     fi
 }
 
 # Get wireless information
 get_wireless_info() {
-    echo -e "\n${BOLD}${BLUE}Kablosuz Ağ Bilgileri${RESET}"
+    echo -e "\n${BOLD}${BLUE}${WIRELESS_INFO_HEADER}${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v iwconfig &> /dev/null; then
-        echo -e "${YELLOW}Kablosuz Arayüz Bilgileri:${RESET}"
+        echo -e "${YELLOW}${WIRELESS_INTERFACE_LABEL}:${RESET}"
         iwconfig 2>/dev/null | grep -v "no wireless" | sed 's/^/  /'
     fi
 }
 
 # Get network routing information
 get_routing_info() {
-    echo -e "\n${BOLD}${BLUE}Ağ Yönlendirme Bilgileri${RESET}"
+    echo -e "\n${BOLD}${BLUE}${ROUTING_INFO_HEADER}${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v route &> /dev/null; then
-        echo -e "${YELLOW}Yönlendirme Tablosu:${RESET}"
+        echo -e "${YELLOW}${ROUTING_TABLE_LABEL}:${RESET}"
         route -n | sed 's/^/  /'
     fi
 }
 
 # Get DNS information
 get_dns_info() {
-    echo -e "\n${BOLD}${BLUE}DNS Bilgileri${RESET}"
+    echo -e "\n${BOLD}${BLUE}${DNS_INFO_HEADER}${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v cat &> /dev/null; then
-        echo -e "${YELLOW}DNS Sunucuları:${RESET}"
+        echo -e "${YELLOW}${DNS_SERVERS_LABEL}:${RESET}"
         cat /etc/resolv.conf | grep "nameserver" | sed 's/^/  /'
     fi
 }
