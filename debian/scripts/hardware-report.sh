@@ -26,16 +26,20 @@ HTML_OUTPUT=""
 INTERACTIVE=false
 SELECTED_SECTIONS=""
 LANGUAGE=""
+SHOW_HELP=false
 
 # Parse command line arguments
 parse_arguments() {
+    # First pass: collect all arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
+            -l|--language)
+                LANGUAGE="$2"
+                shift 2
+                ;;
             -h|--help)
-                # Initialize language before showing help
-                init_language "$LANGUAGE"
-                show_help
-                exit 0
+                SHOW_HELP=true
+                shift
                 ;;
             -o|--output)
                 OUTPUT_FILE="$2"
@@ -53,10 +57,6 @@ parse_arguments() {
                 SELECTED_SECTIONS="$2"
                 shift 2
                 ;;
-            -l|--language)
-                LANGUAGE="$2"
-                shift 2
-                ;;
             *)
                 echo -e "${RED}Error: Unknown parameter: $1${RESET}"
                 echo -e "Use --help to see available options"
@@ -64,15 +64,21 @@ parse_arguments() {
                 ;;
         esac
     done
+
+    # Initialize language first
+    init_language "$LANGUAGE"
+
+    # Then show help if requested
+    if [ "$SHOW_HELP" = true ]; then
+        show_help
+        exit 0
+    fi
 }
 
 # Main function
 main() {
     # Parse command line arguments
     parse_arguments "$@"
-
-    # Initialize language
-    init_language "$LANGUAGE"
 
     # Check requirements first
     check_requirements
