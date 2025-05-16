@@ -3,6 +3,21 @@
 # Source required files
 source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
 
+# Get basic system information (vendor and model)
+get_basic_system_info() {
+    echo -e "\n${BOLD}${BLUE}$SYSTEM_INFO${RESET}"
+    echo -e "${CYAN}----------------------------------------${RESET}"
+
+    if command -v dmidecode &> /dev/null; then
+        VENDOR=$(sudo dmidecode -s system-manufacturer 2>/dev/null)
+        MODEL=$(sudo dmidecode -s system-product-name 2>/dev/null)
+        
+        if [ ! -z "$VENDOR" ] && [ ! -z "$MODEL" ]; then
+            echo -e "${YELLOW}System:${RESET} $VENDOR $MODEL"
+        fi
+    fi
+}
+
 # Get system information
 get_system_info() {
     echo -e "\n${BOLD}${BLUE}$SYSTEM_INFO${RESET}"
@@ -89,12 +104,16 @@ get_system_users() {
 
 # Main system information gathering function
 gather_system_info() {
-    get_system_info
-    get_os_info
-    get_kernel_info
-    get_uptime_info
-    get_system_load
-    get_running_processes
-    get_system_services
-    get_system_users
+    if [ "$DETAILED" = true ]; then
+        get_system_info
+        get_os_info
+        get_kernel_info
+        get_uptime_info
+        get_system_load
+        get_running_processes
+        get_system_services
+        get_system_users
+    else
+        get_basic_system_info
+    fi
 } 

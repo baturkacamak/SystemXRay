@@ -3,6 +3,22 @@
 # Source required files
 source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
 
+# Get basic CPU information
+get_basic_cpu_info() {
+    echo -e "\n${BOLD}${BLUE}$CPU_INFO${RESET}"
+    echo -e "${CYAN}----------------------------------------${RESET}"
+
+    if command -v lscpu &> /dev/null; then
+        MODEL=$(lscpu | grep "Model name" | sed 's/^.*: *//')
+        CORES=$(lscpu | grep "CPU(s):" | head -1 | awk '{print $2}')
+        THREADS=$(lscpu | grep "Thread(s) per core" | awk '{print $4}')
+        TOTAL_THREADS=$((CORES * THREADS))
+        
+        echo -e "${YELLOW}Processor:${RESET} $MODEL"
+        echo -e "${YELLOW}Cores/Threads:${RESET} $CORES cores, $TOTAL_THREADS threads"
+    fi
+}
+
 # Get CPU information
 get_cpu_info() {
     echo -e "\n${BOLD}${BLUE}$CPU_INFO${RESET}"
@@ -55,7 +71,11 @@ get_cpu_features() {
 
 # Main CPU information gathering function
 gather_cpu_info() {
-    get_cpu_info
-    get_cpu_arch_info
-    get_cpu_features
+    if [ "$DETAILED" = true ]; then
+        get_cpu_info
+        get_cpu_arch_info
+        get_cpu_features
+    else
+        get_basic_cpu_info
+    fi
 } 

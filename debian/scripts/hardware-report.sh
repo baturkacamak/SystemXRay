@@ -80,39 +80,6 @@ parse_arguments() {
     fi
 }
 
-# Function to gather basic hardware information
-gather_basic_info() {
-    echo -e "${BOLD}${GREEN}$TITLE${RESET}"
-    echo -e "${CYAN}========================================${RESET}"
-
-    # Basic System Information
-    echo -e "${BOLD}System Information:${RESET}"
-    hostnamectl | grep -E "Operating System|Kernel|Architecture" | sed 's/^[ \t]*//'
-    echo
-
-    # Basic CPU Information
-    echo -e "${BOLD}CPU Information:${RESET}"
-    lscpu | grep -E "Model name|CPU\(s\)|Thread|Core|Socket" | sed 's/^[ \t]*//'
-    echo
-
-    # Basic Memory Information
-    echo -e "${BOLD}Memory Information:${RESET}"
-    free -h | grep -v "Swap" | sed 's/^[ \t]*//'
-    echo
-
-    # Basic Storage Information
-    echo -e "${BOLD}Storage Information:${RESET}"
-    df -h / | sed 's/^[ \t]*//'
-    echo
-
-    # Basic GPU Information (if available)
-    if command -v lspci &> /dev/null; then
-        echo -e "${BOLD}GPU Information:${RESET}"
-        lspci | grep -i "vga\|3d" | sed 's/^[ \t]*//'
-        echo
-    fi
-}
-
 # Main function
 main() {
     # Parse command line arguments
@@ -121,31 +88,28 @@ main() {
     # Check requirements first
     check_requirements
 
+    # Gather hardware information
+    echo -e "${BOLD}${GREEN}$TITLE${RESET}"
+    echo -e "${CYAN}========================================${RESET}"
+
+    # System Information
+    gather_system_info
+
+    # CPU Information
+    gather_cpu_info
+
+    # GPU Information
+    gather_gpu_info
+
+    # Memory Information
+    gather_memory_info
+
+    # Storage Information
+    gather_storage_info
+
+    # Network Information
     if [ "$DETAILED" = true ]; then
-        # Gather detailed hardware information
-        echo -e "${BOLD}${GREEN}$TITLE${RESET}"
-        echo -e "${CYAN}========================================${RESET}"
-
-        # System Information
-        gather_system_info
-
-        # CPU Information
-        gather_cpu_info
-
-        # GPU Information
-        gather_gpu_info
-
-        # Memory Information
-        gather_memory_info
-
-        # Storage Information
-        gather_storage_info
-
-        # Network Information
         gather_network_info
-    else
-        # Gather basic hardware information
-        gather_basic_info
     fi
 }
 

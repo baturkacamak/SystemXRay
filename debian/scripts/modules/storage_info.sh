@@ -64,11 +64,48 @@ get_disk_io_stats() {
     fi
 }
 
+# Get basic storage information
+get_basic_storage_info() {
+    echo -e "\n${BOLD}${BLUE}$DISK_INFO${RESET}"
+    echo -e "${CYAN}----------------------------------------${RESET}"
+
+    if command -v lsblk &> /dev/null; then
+        # Get physical drives
+        echo -e "${YELLOW}Storage Devices:${RESET}"
+        for disk in $(lsblk -d -o NAME | grep -v "NAME"); do
+            if [[ $disk == *"nvme"* ]] || [[ $disk == *"sd"* ]]; then
+                VENDOR=$(lsblk -d -o VENDOR /dev/$disk | tail -n 1)
+                MODEL=$(lsblk -d -o MODEL /dev/$disk | tail -n 1)
+                SIZE=$(lsblk -d -o SIZE /dev/$disk | tail -n 1)
+                
+                # Determine storage type
+                if [[ $disk == *"nvme"* ]]; then
+                    TYPE="NVMe SSD"
+                elif [[ $MODEL == *"SSD"* ]]; then
+                    TYPE="SATA SSD"
+                else
+                    TYPE="HDD"
+                fi
+                
+                # Clean up model name
+                MODEL=$(echo "$MODEL" | sed 's/SSD//g' | sed 's/^[ \t]*//;s/[ \t]*$//')
+                
+                # Format the output with capacity
+                echo -e "  $VENDOR $MODEL ($TYPE) - $SIZE"
+            fi
+        done
+    fi
+}
+
 # Main storage information gathering function
 gather_storage_info() {
-    get_disk_usage
-    get_disk_info
-    get_smart_info
-    get_disk_temperature
-    get_disk_io_stats
+    if [ "$DETAILED" = true ]; then
+        get_disk_usage
+        get_disk_info
+        get_smart_info
+        get_disk_temperature
+        get_disk_io_stats
+    else
+        get_basic_storage_info
+    fi
 } 

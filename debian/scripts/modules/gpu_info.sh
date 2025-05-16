@@ -3,6 +3,32 @@
 # Source required files
 source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
 
+# Get basic GPU information
+get_basic_gpu_info() {
+    echo -e "\n${BOLD}${BLUE}$GPU_INFO${RESET}"
+    echo -e "${CYAN}----------------------------------------${RESET}"
+
+    # Check for NVIDIA GPU
+    if command -v nvidia-smi &> /dev/null; then
+        GPU_INFO=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null)
+        if [ ! -z "$GPU_INFO" ]; then
+            echo -e "${YELLOW}Graphics:${RESET} $GPU_INFO"
+        fi
+    # Check for AMD GPU
+    elif command -v rocm-smi &> /dev/null; then
+        GPU_INFO=$(rocm-smi --showproductname --showmeminfo vram 2>/dev/null)
+        if [ ! -z "$GPU_INFO" ]; then
+            echo -e "${YELLOW}Graphics:${RESET} $GPU_INFO"
+        fi
+    # Check for integrated GPU
+    else
+        GPU_INFO=$(lspci | grep -i "vga\|3d" | sed 's/^.*: //')
+        if [ ! -z "$GPU_INFO" ]; then
+            echo -e "${YELLOW}Graphics:${RESET} $GPU_INFO"
+        fi
+    fi
+}
+
 # Get NVIDIA GPU information
 get_nvidia_gpu_info() {
     if command -v nvidia-smi &> /dev/null; then
@@ -59,8 +85,12 @@ get_display_info() {
 
 # Main GPU information gathering function
 gather_gpu_info() {
-    get_nvidia_gpu_info
-    get_amd_gpu_info
-    get_integrated_gpu_info
-    get_display_info
+    if [ "$DETAILED" = true ]; then
+        get_nvidia_gpu_info
+        get_amd_gpu_info
+        get_integrated_gpu_info
+        get_display_info
+    else
+        get_basic_gpu_info
+    fi
 } 
