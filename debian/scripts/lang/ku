@@ -1,8 +1,8 @@
-# krt translations for hardware-report script
+# ku translations for hardware-report script
 
 # General
 TITLE="Rapora Hardware"
-GENERATED="Hate çêkirin"
+GENERATED="Hat çêkirin"
 SYSTEM_INFO="Agahiyên Sîstemê"
 HOSTNAME="Navê Host"
 OS="Sîstema Operasyonê"
@@ -191,4 +191,4 @@ ERROR_NO_NMCLI="Fermana nmcli nehat dîtin. Ji kerema xwe paketa network-manager
 ERROR_NO_NVIDIA_SMI="Fermana nvidia-smi nehat dîtin. Ji kerema xwe paketa nvidia-utils saz bikin"
 ERROR_NO_ROCM="Fermana rocm-smi nehat dîtin. Ji kerema xwe paketa rocm-smi saz bikin"
 ERROR_NO_IP="Fermana ip nehat dîtin. Ji kerema xwe paketa iproute2 saz bikin"
-ERROR_NO_NMCLI="Fermana nmcli nehat dîtin. Ji kerema xwe paketa network-manager saz bikin"
+ERROR_NO_NMCLI="Fermana nmcli nehat dîtin. Ji kerema xwe paketa network-manager saz bikin" 
