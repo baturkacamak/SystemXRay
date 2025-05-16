@@ -32,6 +32,8 @@ parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
             -h|--help)
+                # Initialize language before showing help
+                init_language "$LANGUAGE"
                 show_help
                 exit 0
                 ;;
