@@ -8,24 +8,64 @@ get_basic_gpu_info() {
     echo -e "\n${BOLD}${BLUE}$GPU_INFO${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
+    GPU_COUNT=0
+    FOUND_GPU=false
+
     # Check for NVIDIA GPU
     if command -v nvidia-smi &> /dev/null; then
-        GPU_INFO=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null)
-        if [ ! -z "$GPU_INFO" ]; then
-            echo -e "${YELLOW}Graphics:${RESET} $GPU_INFO"
+        NVIDIA_INFO=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null)
+        if [ ! -z "$NVIDIA_INFO" ] && [[ ! "$NVIDIA_INFO" =~ "failed" ]] && [[ ! "$NVIDIA_INFO" =~ "error" ]] && [[ ! "$NVIDIA_INFO" =~ "NVIDIA-SMI" ]]; then
+            while IFS=, read -r name memory; do
+                if [[ ! "$name" =~ "NVIDIA-SMI" ]] && [[ ! "$name" =~ "failed" ]]; then
+                    GPU_COUNT=$((GPU_COUNT + 1))
+                    echo -e "  GPU $GPU_COUNT: $name, $memory"
+                    FOUND_GPU=true
+                fi
+            done <<< "$NVIDIA_INFO"
         fi
+    fi
+
     # Check for AMD GPU
-    elif command -v rocm-smi &> /dev/null; then
-        GPU_INFO=$(rocm-smi --showproductname --showmeminfo vram 2>/dev/null)
-        if [ ! -z "$GPU_INFO" ]; then
-            echo -e "${YELLOW}Graphics:${RESET} $GPU_INFO"
+    if command -v rocm-smi &> /dev/null; then
+        AMD_INFO=$(rocm-smi --showproductname --showmeminfo vram 2>/dev/null)
+        if [ ! -z "$AMD_INFO" ] && [[ ! "$AMD_INFO" =~ "failed" ]] && [[ ! "$AMD_INFO" =~ "error" ]]; then
+            GPU_COUNT=$((GPU_COUNT + 1))
+            echo -e "  GPU $GPU_COUNT: $AMD_INFO"
+            FOUND_GPU=true
         fi
-    # Check for integrated GPU
-    else
-        GPU_INFO=$(lspci | grep -i "vga\|3d" | sed 's/^.*: //')
-        if [ ! -z "$GPU_INFO" ]; then
-            echo -e "${YELLOW}Graphics:${RESET} $GPU_INFO"
+    fi
+
+    # Check for integrated GPU or any GPU using lspci
+    if [ "$FOUND_GPU" = false ]; then
+        # First check if lspci is available
+        if command -v lspci &> /dev/null; then
+            # Check for any GPU-related devices
+            INTEGRATED_GPUS=$(lspci | grep -i "vga\|3d\|display" | grep -v "NVIDIA" | sed 's/^.*: //')
+            if [ ! -z "$INTEGRATED_GPUS" ]; then
+                while IFS= read -r gpu; do
+                    if [[ ! "$gpu" =~ "NVIDIA" ]] || [[ "$gpu" =~ "NVIDIA" && "$FOUND_GPU" = false ]]; then
+                        GPU_COUNT=$((GPU_COUNT + 1))
+                        echo -e "  GPU $GPU_COUNT: $gpu"
+                    fi
+                done <<< "$INTEGRATED_GPUS"
+            fi
         fi
+    fi
+
+    # Additional check for GPU using glxinfo if available
+    if [ "$FOUND_GPU" = false ] && [ "$GPU_COUNT" -eq 0 ]; then
+        if command -v glxinfo &> /dev/null; then
+            GLX_INFO=$(glxinfo 2>/dev/null | grep "OpenGL renderer string" | sed 's/.*: //')
+            if [ ! -z "$GLX_INFO" ] && [[ ! "$GLX_INFO" =~ "llvmpipe" ]] && [[ ! "$GLX_INFO" =~ "software" ]]; then
+                GPU_COUNT=$((GPU_COUNT + 1))
+                echo -e "  GPU $GPU_COUNT: $GLX_INFO"
+            fi
+        fi
+    fi
+
+    # If no GPU found
+    if [ "$GPU_COUNT" -eq 0 ]; then
+        echo -e "  ${YELLOW}$NO_GPU_FOUND${RESET}"
     fi
 }
 
