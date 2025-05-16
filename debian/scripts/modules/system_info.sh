@@ -5,85 +5,85 @@ source "$(dirname "${BASH_SOURCE[0]}")/../config/colors.sh"
 
 # Get system information
 get_system_info() {
-    echo -e "\n${BOLD}${BLUE}Sistem Bilgileri${RESET}"
+    echo -e "\n${BOLD}${BLUE}$SYSTEM_INFO${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v hostnamectl &> /dev/null; then
-        echo -e "${YELLOW}Sistem Bilgileri:${RESET}"
+        echo -e "${YELLOW}$SYSTEM_INFO:${RESET}"
         hostnamectl | sed 's/^/  /'
     fi
 }
 
 # Get OS information
 get_os_info() {
-    echo -e "\n${BOLD}${BLUE}İşletim Sistemi Bilgileri${RESET}"
+    echo -e "\n${BOLD}${BLUE}$OS_INFO${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if [ -f /etc/os-release ]; then
-        echo -e "${YELLOW}İşletim Sistemi:${RESET}"
+        echo -e "${YELLOW}$OS:${RESET}"
         cat /etc/os-release | grep -E "PRETTY_NAME|VERSION" | sed 's/^/  /'
     fi
 }
 
 # Get kernel information
 get_kernel_info() {
-    echo -e "\n${BOLD}${BLUE}Çekirdek (Kernel) Bilgileri${RESET}"
+    echo -e "\n${BOLD}${BLUE}$KERNEL_INFO${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
-    echo -e "${YELLOW}Kernel Sürümü:${RESET}"
+    echo -e "${YELLOW}$KERNEL_VERSION:${RESET}"
     uname -a | sed 's/^/  /'
 }
 
 # Get system uptime
 get_uptime_info() {
-    echo -e "\n${BOLD}${BLUE}Sistem Çalışma Süresi${RESET}"
+    echo -e "\n${BOLD}${BLUE}$UPTIME_INFO${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v uptime &> /dev/null; then
-        echo -e "${YELLOW}Çalışma Süresi:${RESET}"
+        echo -e "${YELLOW}$UPTIME:${RESET}"
         uptime | sed 's/^/  /'
     fi
 }
 
 # Get system load
 get_system_load() {
-    echo -e "\n${BOLD}${BLUE}Sistem Yükü${RESET}"
+    echo -e "\n${BOLD}${BLUE}$SYSTEM_LOAD${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v top &> /dev/null; then
-        echo -e "${YELLOW}Sistem Yükü:${RESET}"
+        echo -e "${YELLOW}$SYSTEM_LOAD:${RESET}"
         top -bn1 | grep "load average" | sed 's/^/  /'
     fi
 }
 
 # Get running processes
 get_running_processes() {
-    echo -e "\n${BOLD}${BLUE}Çalışan İşlemler${RESET}"
+    echo -e "\n${BOLD}${BLUE}$RUNNING_PROCESSES${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v ps &> /dev/null; then
-        echo -e "${YELLOW}En Çok CPU Kullanan İşlemler:${RESET}"
+        echo -e "${YELLOW}$TOP_CPU_PROCESSES:${RESET}"
         ps aux --sort=-%cpu | head -6 | sed 's/^/  /'
     fi
 }
 
 # Get system services
 get_system_services() {
-    echo -e "\n${BOLD}${BLUE}Sistem Servisleri${RESET}"
+    echo -e "\n${BOLD}${BLUE}$SYSTEM_SERVICES${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
     if command -v systemctl &> /dev/null; then
-        echo -e "${YELLOW}Aktif Servisler:${RESET}"
+        echo -e "${YELLOW}$ACTIVE_SERVICES:${RESET}"
         systemctl list-units --type=service --state=running | head -10 | sed 's/^/  /'
     fi
 }
 
 # Get system users
 get_system_users() {
-    echo -e "\n${BOLD}${BLUE}Sistem Kullanıcıları${RESET}"
+    echo -e "\n${BOLD}${BLUE}$SYSTEM_USERS${RESET}"
     echo -e "${CYAN}----------------------------------------${RESET}"
 
-    echo -e "${YELLOW}Aktif Kullanıcılar:${RESET}"
+    echo -e "${YELLOW}$ACTIVE_USERS:${RESET}"
     who | sed 's/^/  /'
 }
 

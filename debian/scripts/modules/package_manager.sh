@@ -31,13 +31,13 @@ auto_install_tools() {
             "nvidia-smi")
                 if [ "$distro_type" = "debian" ]; then
                     if ! dpkg -l | grep -q nvidia-driver; then
-                        echo -e "${YELLOW}nvidia-smi için nvidia-driver yüklenecek${RESET}"
+                        echo -e "${YELLOW}$ERROR_NO_NVIDIA_DRIVER${RESET}"
                         packages_to_install="$packages_to_install nvidia-driver-525"
                     fi
                 fi
                 ;;
             "rocm-smi")
-                echo -e "${YELLOW}rocm-smi otomatik yüklenemiyor, AMD GPU kullanıyorsanız ROCm'u manuel yüklemelisiniz${RESET}"
+                echo -e "${YELLOW}$ERROR_NO_ROCM${RESET}"
                 ;;
             "sensors")
                 packages_to_install="$packages_to_install lm-sensors"
@@ -58,11 +58,11 @@ auto_install_tools() {
     packages_to_install=$(echo "$packages_to_install" | tr -s ' ' | sed 's/^ *//' | sed 's/ *$//')
 
     if [ -z "$packages_to_install" ]; then
-        echo -e "${GREEN}Yüklenecek paket kalmadı.${RESET}"
+        echo -e "${GREEN}$NO_PACKAGES_TO_INSTALL${RESET}"
         return 0
     fi
 
-    echo -e "${CYAN}Paket listesi güncelleniyor...${RESET}"
+    echo -e "${CYAN}$UPDATING_PACKAGE_LIST${RESET}"
 
     case $distro_type in
         debian)
@@ -77,7 +77,7 @@ auto_install_tools() {
             local current_pkg=1
 
             for pkg in $packages_to_install; do
-                echo -e "${CYAN}[$current_pkg/$total_pkgs] Yükleniyor: $pkg${RESET}"
+                echo -e "${CYAN}[$current_pkg/$total_pkgs] $INSTALLING: $pkg${RESET}"
 
                 # Install package in background
                 sudo apt-get install -y -qq $pkg &>/dev/null &
@@ -86,9 +86,9 @@ auto_install_tools() {
 
                 # Check if installation completed successfully
                 if wait $install_pid; then
-                    echo -e "${GREEN}✓ Başarıyla yüklendi: $pkg${RESET}"
+                    echo -e "${GREEN}✓ $INSTALLATION_SUCCESSFUL: $pkg${RESET}"
                 else
-                    echo -e "${RED}✗ Yükleme başarısız: $pkg${RESET}"
+                    echo -e "${RED}✗ $INSTALLATION_FAILED: $pkg${RESET}"
                     install_success=false
                 fi
 
@@ -97,52 +97,52 @@ auto_install_tools() {
             ;;
         redhat)
             for pkg in $packages_to_install; do
-                echo -e "${CYAN}Yükleniyor: $pkg${RESET}"
+                echo -e "${CYAN}$INSTALLING: $pkg${RESET}"
                 sudo yum install -y -q $pkg &>/dev/null &
                 install_pid=$!
                 show_spinner $install_pid
 
                 if wait $install_pid; then
-                    echo -e "${GREEN}✓ Başarıyla yüklendi: $pkg${RESET}"
+                    echo -e "${GREEN}✓ $INSTALLATION_SUCCESSFUL: $pkg${RESET}"
                 else
-                    echo -e "${RED}✗ Yükleme başarısız: $pkg${RESET}"
+                    echo -e "${RED}✗ $INSTALLATION_FAILED: $pkg${RESET}"
                     install_success=false
                 fi
             done
             ;;
         arch)
             for pkg in $packages_to_install; do
-                echo -e "${CYAN}Yükleniyor: $pkg${RESET}"
+                echo -e "${CYAN}$INSTALLING: $pkg${RESET}"
                 sudo pacman -S --noconfirm --quiet $pkg &>/dev/null &
                 install_pid=$!
                 show_spinner $install_pid
 
                 if wait $install_pid; then
-                    echo -e "${GREEN}✓ Başarıyla yüklendi: $pkg${RESET}"
+                    echo -e "${GREEN}✓ $INSTALLATION_SUCCESSFUL: $pkg${RESET}"
                 else
-                    echo -e "${RED}✗ Yükleme başarısız: $pkg${RESET}"
+                    echo -e "${RED}✗ $INSTALLATION_FAILED: $pkg${RESET}"
                     install_success=false
                 fi
             done
             ;;
         *)
-            echo -e "${RED}Sisteminiz için otomatik yükleme desteklenmiyor.${RESET}"
+            echo -e "${RED}$AUTO_INSTALL_NOT_SUPPORTED${RESET}"
             return 1
             ;;
     esac
 
     if [ "$install_success" = true ]; then
-        echo -e "${GREEN}Tüm paketler başarıyla yüklendi.${RESET}"
+        echo -e "${GREEN}$ALL_PACKAGES_INSTALLED${RESET}"
         return 0
     else
-        echo -e "${YELLOW}Bazı paketler yüklenemedi, ancak script çalışmaya devam edecek.${RESET}"
+        echo -e "${YELLOW}$SOME_PACKAGES_FAILED${RESET}"
         return 1
     fi
 }
 
 # Check required tools
 check_requirements() {
-    echo -e "${YELLOW}Gerekli araçlar kontrol ediliyor...${RESET}"
+    echo -e "${YELLOW}$CHECKING_REQUIRED_TOOLS${RESET}"
 
     MISSING_TOOLS=""
 
@@ -162,17 +162,17 @@ check_requirements() {
     done
 
     if [ ! -z "$MISSING_TOOLS" ]; then
-        echo -e "${RED}Bazı gerekli araçlar eksik:${RESET} ${MISSING_TOOLS}"
-        echo -e "${YELLOW}Bu araçlar olmadan script düzgün çalışmayabilir.${RESET}"
+        echo -e "${RED}$MISSING_REQUIRED_TOOLS:${RESET} ${MISSING_TOOLS}"
+        echo -e "${YELLOW}$SCRIPT_MAY_NOT_WORK${RESET}"
     fi
 
     if [ ! -z "$OPTIONAL_TOOLS" ]; then
-        echo -e "${YELLOW}Bazı opsiyonel araçlar eksik:${RESET} ${OPTIONAL_TOOLS}"
-        echo -e "${GRAY}Bu araçları yüklerseniz daha detaylı bilgi alabilirsiniz.${RESET}"
+        echo -e "${YELLOW}$MISSING_OPTIONAL_TOOLS:${RESET} ${OPTIONAL_TOOLS}"
+        echo -e "${GRAY}$INSTALL_FOR_MORE_INFO${RESET}"
     fi
 
     if [ ! -z "$MISSING_TOOLS" ] || [ ! -z "$OPTIONAL_TOOLS" ]; then
-        echo -e "${YELLOW}Eksik araçları otomatik olarak yüklemek ister misiniz? (e/h)${RESET}"
+        echo -e "${YELLOW}$AUTO_INSTALL_PROMPT${RESET}"
         read -n 1 -r
         echo
         if [[ $REPLY =~ ^[Ee]$ ]]; then
@@ -187,7 +187,7 @@ check_requirements() {
 
     # If required tools are still missing, ask whether to continue
     if [ ! -z "$MISSING_TOOLS" ]; then
-        echo -e "${YELLOW}Bazı gerekli araçlar hala eksik. Devam etmek istiyor musunuz? (e/h)${RESET}"
+        echo -e "${YELLOW}$STILL_MISSING_TOOLS${RESET}"
         read -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Ee]$ ]]; then
